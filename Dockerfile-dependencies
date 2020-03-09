@@ -1,0 +1,3 @@
+FROM amazonlinux
+COPY build-dependencies.sh /
+RUN ./build-dependencies.sh
