@@ -9,5 +9,5 @@ RUN apk update && apk add git python3-dev && \
             cat rule-sources | xargs -n1 git clone && \
             mkdir -p ../yar && \
             find . -name "*.yar*" | grep -v deprecated | xargs -I{} cp {} ../yar && \
+            cp rules/malware/MALW_Eicar ../yar
             ./compile.py
-
