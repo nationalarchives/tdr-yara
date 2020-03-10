@@ -4,7 +4,6 @@ import json
 
 
 def analyze_lambda_handler(event, lambda_context):
-    print(event)
     bucket = event["bucketName"]
     key = event["key"]
 
@@ -13,4 +12,6 @@ def analyze_lambda_handler(event, lambda_context):
     s3 = boto3.client("s3")
     s3_object = s3.get_object(Bucket=bucket, Key=key)
     streaming_body = s3_object["Body"]
-    return json.dumps({"result": rules.match(data=streaming_body.read())})
+    match = rules.match(data=streaming_body.read())
+    result = [x.rule for x in match]
+    return json.dumps({"result": result})
