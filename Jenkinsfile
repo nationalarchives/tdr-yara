@@ -13,26 +13,32 @@ pipeline {
       }
       steps {
         script {
-          def accountNumber = getAccountNumberFromStage()
-            sh "mkdir lambda"
-          docker.withRegistry("${accountNumber}.dkr.ecr.eu-west-2.amazonaws.com") {
-            sh "aws ecr get-login --registry-ids ${accountNumber} --no-include-email | sed 's|https://||' | bash"
-            sh "docker pull yara-dependencies:${params.TO_DEPLOY}"
-            sh "docker run -itd --name dependencies yara-dependencies:${params.TO_DEPLOY}"
-            sh "docker build -t ${accountNumber}.dkr.ecr.eu-west-2.amazonaws.com/yara-rules --build-arg ACCOUNT_NUMBER=$accountNumber ."
-            sh "docker run -itd --name rules yara-rules:${params.TO_DEPLOY}"
-            sh "docker cp dependencies:/lambda/dependencies.zip ."
-            sh "docker cp rules:/output /lambda"
-            sh "unzip dependencies.zip -d /lambda"
-            sh "cp main.py /lambda"
-            sh "cd /lambda"
-            sh "zip -r9 ../function.zip"
-            sh "aws lambda update-function-code --function-name TestYara --zip-file fileb:///function.zip"            
-          }
+        def accountNumber = "328920706552"
+        sh "rm -rf lambda && mkdir -p lambda"
+        sh "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${accountNumber}.dkr.ecr.eu-west-2.amazonaws.com"
+        sh "docker run -itd --rm --name dependencies ${accountNumber}.dkr.ecr.eu-west-2.amazonaws.com/yara-dependencies:${params.TO_DEPLOY}"
+        sh "docker build -f Dockerfile-compile -t yara-rules --build-arg ACCOUNT_NUMBER=$accountNumber ."
+        sh "docker run -itd --rm --name rules yara-rules"
+        sh "docker cp dependencies:/lambda/dependencies.zip /"
+        sh "docker cp rules:/output ./lambda"
+        sh "unzip -q /dependencies.zip -d ./lambda"
+        sh "cp main.py ./lambda"
+        dir("lambda") {
+            sh "ls -la"
+            sh "zip -r9 /function.zip ."
+        }
+
+        sh "aws lambda update-function-code --function-name TestYara --zip-file fileb:///function.zip"
         }
       }
     }
   }
+  post {
+        always {
+            sh 'rm -rf lambda'
+            sh "docker stop dependencies rules"
+        }
+    }
 }
 
 def getAccountNumberFromStage() {
