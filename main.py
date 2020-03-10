@@ -2,7 +2,7 @@ import yara
 import boto3
 
 def analyze_lambda_handler(event, lambda_context):
-    bucket = event["bucket"]
+    bucket = event["bucketName"]
     key = event["key"]
 
     rules = yara.load("output")
