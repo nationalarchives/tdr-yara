@@ -3,11 +3,7 @@ FROM $ACCOUNT_NUMBER.dkr.ecr.eu-west-2.amazonaws.com/yara:latest
 WORKDIR /rules
 COPY rule-sources /rules/rule-sources
 COPY compile.py /rules/compile.py
-ARG YARA_VERSION=3.9.0
 RUN apk update && apk add git python3-dev && \
             pip3 install yara-python && \
             cat rule-sources | xargs -n1 git clone && \
-            mkdir -p ../yar && \
-            find . -name "*.yar*" | grep -v deprecated | xargs -I{} cp {} ../yar && \
-            cp rules/malware/MALW_Eicar ../yar && \
             ./compile.py
