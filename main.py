@@ -1,7 +1,9 @@
 import yara
 import boto3
 
+
 def analyze_lambda_handler(event, lambda_context):
+    print(event)
     bucket = event["bucketName"]
     key = event["key"]
 
