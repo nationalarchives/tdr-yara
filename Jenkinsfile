@@ -13,7 +13,7 @@ pipeline {
       }
       steps {
         script {
-        def accountNumber = "328920706552"
+        def accountNumber = env.MANAGEMENT_ACCOUNT
         sh "rm -rf lambda && mkdir -p lambda"
         sh "aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${accountNumber}.dkr.ecr.eu-west-2.amazonaws.com"
         sh "docker run -itd --rm --name dependencies ${accountNumber}.dkr.ecr.eu-west-2.amazonaws.com/yara-dependencies:${params.TO_DEPLOY}"
